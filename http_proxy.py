@@ -167,9 +167,6 @@ def setup_sockets(proxy_port_number):
     # when calling socket.listen() pass a number
     # that's larger than 10 to avoid rejecting
     # connections automatically.
-    print("*" * 50)
-    print("[setup_sockets] Implement me!")
-    print("*" * 50)
     return None
 
 
@@ -199,9 +196,6 @@ def http_request_pipeline(source_addr, http_raw_data):
     parsed = parse_http_request(source_addr, http_raw_data)
 
     # Validate, sanitize, return Http object.
-    print("*" * 50)
-    print("[http_request_pipeline] Implement me!")
-    print("*" * 50)
     return None
 
 
@@ -214,6 +208,11 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
     print("*" * 50)
     print("[parse_http_request] Implement me!")
     print("*" * 50)
+
+    if http_raw_data[:3] == ['G', 'E', 'T']:
+        print("GET TRUE")
+
+
     # Replace this line with the correct values.
     ret = HttpRequestInfo(None, None, None, None, None, None)
     return ret
