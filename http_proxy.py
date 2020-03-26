@@ -157,7 +157,7 @@ def setup_sockets(proxy_port_number):
             print("done receiving")
             break
     
-    print(buffer)
+    print("buffer: ", buffer)
     # when calling socket.listen() pass a number
     # that's larger than 10 to avoid rejecting
     # connections automatically.
