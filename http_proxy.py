@@ -4,6 +4,7 @@ import sys
 import os
 import enum
 import socket
+import re
 
 
 class HttpRequestInfo(object):
@@ -205,12 +206,8 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
     object.
     it does NOT validate the HTTP request.
     """
-    print("*" * 50)
-    print("[parse_http_request] Implement me!")
-    print("*" * 50)
 
-    if http_raw_data[:3] == ['G', 'E', 'T']:
-        print("GET TRUE")
+    print(http_raw_data[:3])
 
 
     # Replace this line with the correct values.
