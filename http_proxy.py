@@ -3,6 +3,7 @@
 import sys
 import os
 import enum
+import socket
 
 
 class HttpRequestInfo(object):
@@ -135,6 +136,19 @@ def setup_sockets(proxy_port_number):
     Feel free to delete this function.
     """
     print("Starting HTTP proxy on port:", proxy_port_number)
+
+    serversock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    
+    serveraddr = ("127.0.0.1", proxy_port_number)
+
+    serversock.bind(serveraddr)
+    serversock.listen(10)
+    clientsock, clientaddr = serversock.accept()
+    print(f"received from {clientaddr}")
+
+    while True:
+        httppacket = clientsock.recv(4096).decode("ascii")
+        print(f"http packet: {httppacket}")
 
     # when calling socket.listen() pass a number
     # that's larger than 10 to avoid rejecting
