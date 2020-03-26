@@ -123,9 +123,6 @@ def entry_point(proxy_port_number):
     """
 
     setup_sockets(proxy_port_number)
-    print("*" * 50)
-    print("[entry_point] Implement me!")
-    print("*" * 50)
     return None
 
 
