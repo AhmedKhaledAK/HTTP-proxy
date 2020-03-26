@@ -142,7 +142,7 @@ def setup_sockets(proxy_port_number):
     serveraddr = ("127.0.0.1", proxy_port_number)
 
     serversock.bind(serveraddr)
-    serversock.listen(10)
+    serversock.listen(12)
     clientsock, clientaddr = serversock.accept()
     print(f"received from {clientaddr}")
 
