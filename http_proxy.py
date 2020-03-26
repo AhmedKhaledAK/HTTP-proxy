@@ -146,10 +146,18 @@ def setup_sockets(proxy_port_number):
     clientsock, clientaddr = serversock.accept()
     print(f"received from {clientaddr}")
 
-    while True:
-        httppacket = clientsock.recv(4096).decode("ascii")
-        print(f"http packet: {httppacket}")
+    buffer = []
 
+    while True:
+        httppacket = clientsock.recv(4096)
+        print(f"http packet: {httppacket}")
+        buffer += httppacket
+        print(f"bytearray: {buffer}")
+        if buffer[-4:] == [13, 10, 13, 10]:
+            print("done receiving")
+            break
+    
+    print(buffer)
     # when calling socket.listen() pass a number
     # that's larger than 10 to avoid rejecting
     # connections automatically.
