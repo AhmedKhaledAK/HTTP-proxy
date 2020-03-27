@@ -219,6 +219,19 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
         i+=1    
     print("path:",path)
 
+    headers = http_raw_data[http_raw_data.index('\n')+1:]
+    print("headersec =", headers)
+    headerslist = [] 
+    while True:
+        header = headers[:headers.index('\n')]
+        print("header:", header)
+        if header[0] == '\r':
+            break
+        headertuple = tuple(header.split(":"))
+        print("headertuple:", headertuple)
+        headerslist += headertuple
+        headers = headers[headers.index('\n')+1:]
+
     # Replace this line with the correct values.
     ret = HttpRequestInfo(None, None, None, None, None, None)
     return ret
