@@ -209,12 +209,16 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
     it does NOT validate the HTTP request.
     """
 
-    match = re.search(r"([a-zA-Z-._~:/?#[\]@!$&'()*+,;=\d]+)\s+([a-zA-Z-._~:/?#[\]@!$&'()*+,;=\d]+)\s+([a-zA-Z-._~:/?#[\]@!$&'()*+,;=\d]+)", http_raw_data)
+    match = re.search(r"([a-zA-Z-._~:/?#[\]@!$&'()*+,;=0-9]+)\s+([a-zA-Z-._~:/?#[\]@!$&'()*+,;=0-9]+)\s+([a-zA-Z-._~:/?#[\]@!$&'()*+,;=0-9]+)", http_raw_data)
     if match != None:
         print("group0:",match.group(0))
         print("group1:",match.group(1))
         print("group2:",match.group(2))
         print("group3:",match.group(3))
+        method = match.group(1)
+        path = match.group(2)
+        version = match.group(3)
+        
 
 
     method = None
