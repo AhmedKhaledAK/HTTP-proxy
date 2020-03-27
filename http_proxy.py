@@ -213,7 +213,7 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
     print("version:", version)
     pathlen = len(requestln) - len(version)-1 - 4     # 3 is for GET and 1 is for SPACE
     path = ""
-    i=4
+    i=4	# index of the first space, can be better found using index() method
     while i < 4+pathlen:
         path += requestln[i]
         i+=1    
