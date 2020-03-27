@@ -204,8 +204,20 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
     it does NOT validate the HTTP request.
     """
 
-    print(http_raw_data[:3])
+    # the request line from GET to \n inclusive
+    requestln = http_raw_data[:http_raw_data.index('\n')+1] 
 
+    method = requestln[:3]
+    print(f"method: {method}")
+    version = requestln[-10:]
+    print("version:", version)
+    pathlen = len(requestln) - len(version) - 4     # 3 is for GET and 1 is for SPACE
+    path = ""
+    i=4
+    while i < 4+pathlen:
+        path += requestln[i]
+        i+=1    
+    print("path:",path)
 
     # Replace this line with the correct values.
     ret = HttpRequestInfo(None, None, None, None, None, None)
