@@ -232,7 +232,7 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
             break
         headertuple = tuple(header.split(":"))
         print("headertuple:", headertuple)
-        if headertuple[0] == "Host":
+        if headertuple[0].lower().strip() == "host":
             ishost = True
             host = headertuple[1]
             if len(headertuple) == 3:	# a port should be found
