@@ -192,7 +192,12 @@ def http_request_pipeline(source_addr, http_raw_data):
     """
     # Parse HTTP request
     parsed = parse_http_request(source_addr, http_raw_data)
-
+    print("obj client info:", parsed.client_address_info)
+    print("obj method:", parsed.method)
+    print("obj req host:", parsed.requested_host)
+    print("obj req path:", parsed.requested_path)
+    print("obj req port:", parsed.requested_port)
+    print("obj req headers:", parsed.headers)
     # Validate, sanitize, return Http object.
     return None
 
@@ -207,7 +212,10 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
     # the request line from GET to \n inclusive
     requestln = http_raw_data[:http_raw_data.index('\n')] 
 
-    method = requestln[:requestln.index(' ')]	# to be sent
+    try:
+        method = requestln[:requestln.index(' ')]	# to be sent
+    except:
+        method = None
     print(f"method: {method}")
     version = requestln[-9:]	# to be sent
     print("version:", version)
@@ -248,7 +256,11 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
     if ishost == False:
         host = path
         path = None
-
+        match = re.search(":\d+",host)
+        print("match:",match)
+        if match != None:
+            print("group:",match.group()[1:])
+    
     print("host:",host)
     print("path:",path)
     print("port:",port)
