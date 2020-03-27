@@ -207,12 +207,12 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
     # the request line from GET to \n inclusive
     requestln = http_raw_data[:http_raw_data.index('\n')] 
 
-    method = requestln[:requestln.index(' ')]
+    method = requestln[:requestln.index(' ')]	# to be sent
     print(f"method: {method}")
-    version = requestln[-9:]
+    version = requestln[-9:]	# to be sent
     print("version:", version)
     pathlen = len(requestln) - len(version)-1 - 4     # 3 is for GET and 1 is for SPACE
-    path = ""
+    path = ""	# to be sent
     i=4	# index of the first space according to GET only, can be better found using index() method
     while i < 4+pathlen:
         path += requestln[i]
@@ -221,30 +221,37 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
 
     headers = http_raw_data[http_raw_data.index('\n')+1:]
     print("headersec =", headers)
-    headerslist = [] 
+    headerslist = []	# to be sent
+    ishost = False
+    host = None	# to be sent
+    port = 80	# to be sent
     while True:
-        header = headers[:headers.index('\n')]
+        header = headers[:headers.index('\r')]
         print("header:", header)
-        if header[0] == '\r':
+        if len(header) == 0:
             break
         headertuple = tuple(header.split(":"))
         print("headertuple:", headertuple)
+        if headertuple[0] == "Host":
+            ishost = True
+            host = headertuple[1]
+            if len(headertuple) == 3:	# a port should be found
+                try:
+                    port = int(headertuple[2])
+                except:
+                    port = 80
         headerslist.append(headertuple)
         headers = headers[headers.index('\n')+1:]
 
     print("headerslist:", headerslist)
 
-    host = None
-    port = 80
-    if len(headerslist) > 0:
-        host = headerslist[0][1]
-    else:
+    if ishost == False:
         host = path
         path = None
 
     print("host:",host)
     print("path:",path)
-    
+    print("port:",port)
     # Replace this line with the correct values.
     ret = HttpRequestInfo(source_addr, method, host, port, path, headerslist)
     return ret
