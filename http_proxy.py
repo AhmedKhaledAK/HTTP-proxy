@@ -260,6 +260,7 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
         print("match:",match)
         if match != None:
             print("group:",match.group()[1:])
+            port = int(match.group()[1:])
     
     print("host:",host)
     print("path:",path)
