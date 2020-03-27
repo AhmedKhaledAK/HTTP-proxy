@@ -245,9 +245,9 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
             host = headertuple[1]
             if len(headertuple) >= 3:	# a port should be found
                 try:
-                    port = int(headertuple[2])
+                    port = int(headertuple[2].strip())
                 except:
-                    port = 80
+                    port = -1
         headerslist.append(headertuple)
         headers = headers[headers.index('\n')+1:]
 
