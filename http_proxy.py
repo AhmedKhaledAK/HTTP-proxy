@@ -205,7 +205,7 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
     """
 
     # the request line from GET to \n inclusive
-    requestln = http_raw_data[:http_raw_data.index('\n')+1] 
+    requestln = http_raw_data[:http_raw_data.index('\n')] 
 
     method = requestln[:requestln.index(' ')]
     print(f"method: {method}")
