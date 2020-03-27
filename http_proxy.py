@@ -233,8 +233,20 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
         headers = headers[headers.index('\n')+1:]
 
     print("headerslist:", headerslist)
+
+    host = None
+    port = 80
+    if len(headerslist) > 0:
+        host = headerslist[0][1]
+    else:
+        host = path
+        path = None
+
+    print("host:",host)
+    print("path:",path)
+    
     # Replace this line with the correct values.
-    ret = HttpRequestInfo(None, None, None, None, None, None)
+    ret = HttpRequestInfo(source_addr, method, host, port, path, headerslist)
     return ret
 
 
