@@ -209,9 +209,9 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
 
     method = requestln[:requestln.index(' ')]
     print(f"method: {method}")
-    version = requestln[-10:]
+    version = requestln[-9:]
     print("version:", version)
-    pathlen = len(requestln) - len(version) - 4     # 3 is for GET and 1 is for SPACE
+    pathlen = len(requestln) - len(version)-1 - 4     # 3 is for GET and 1 is for SPACE
     path = ""
     i=4
     while i < 4+pathlen:
