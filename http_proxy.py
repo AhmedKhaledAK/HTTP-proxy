@@ -235,7 +235,7 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
         if headertuple[0].lower().strip() == "host":
             ishost = True
             host = headertuple[1]
-            if len(headertuple) == 3:	# a port should be found
+            if len(headertuple) >= 3:	# a port should be found
                 try:
                     port = int(headertuple[2])
                 except:
