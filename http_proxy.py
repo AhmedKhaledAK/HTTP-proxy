@@ -229,9 +229,10 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
             break
         headertuple = tuple(header.split(":"))
         print("headertuple:", headertuple)
-        headerslist += headertuple
+        headerslist.append(headertuple)
         headers = headers[headers.index('\n')+1:]
 
+    print("headerslist:", headerslist)
     # Replace this line with the correct values.
     ret = HttpRequestInfo(None, None, None, None, None, None)
     return ret
