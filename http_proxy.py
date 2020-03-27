@@ -209,7 +209,16 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
     it does NOT validate the HTTP request.
     """
 
-    match = re.search(r"([a-zA-Z-._~:/?#[\]@!$&'()*+,;=0-9]+)\s+([a-zA-Z-._~:/?#[\]@!$&'()*+,;=0-9]+)\s+([a-zA-Z-._~:/?#[\]@!$&'()*+,;=0-9]+)", http_raw_data)
+    method = None
+    host = None
+    path = None
+    version = None
+    port = None
+    headerslist = None
+
+    requestln = http_raw_data[:http_raw_data.index('\n')] 
+
+    match = re.search(r"([a-zA-Z-._~:/?#[\]@!$&'()*+,;=0-9]+)\s+([a-zA-Z-._~:/?#[\]@!$&'()*+,;=0-9]+)\s+([a-zA-Z-._~:/?#[\]@!$&'()*+,;=0-9]+)", requestln)
     if match != None:
         print("group0:",match.group(0))
         print("group1:",match.group(1))
@@ -218,18 +227,11 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
         method = match.group(1)
         path = match.group(2)
         version = match.group(3)
-        
 
-
-    method = None
-    host = None
-    path = None
-    port = None
-    headerslist = None
     
     """
     # the request line from GET to \n inclusive
-    requestln = http_raw_data[:http_raw_data.index('\n')] 
+    
 
     try:
         method = requestln[:requestln.index(' ')]	# to be sent
