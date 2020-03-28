@@ -228,7 +228,7 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
     path = None
     version = None
     port = None
-    headerslist = None
+    headerslist = []
 
     requestln = http_raw_data[:http_raw_data.index('\n')] 
 
@@ -247,14 +247,18 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
         
     headers = http_raw_data[http_raw_data.index('\n')+1:]
     
-    headerslist = re.findall(r"([a-zA-Z0-9 -]+):[^\n\ra-zA-Z/:.0-9();,+=*\" -]*([a-zA-Z/:.0-9();,+=*\" -]+)", headers)
+    tupleslist = re.findall(r"([a-zA-Z0-9 -]+):[^\n\ra-zA-Z/:.0-9();,+=*\" -]*([a-zA-Z/:.0-9();,+=*\" -]+)", headers)
     print("headerslist", headerslist)
 
-    for h in headerslist:
-        if h[0].lower().strip() == "host":
-            host = h[1].lower().strip()
+    for h in tupleslist:
+        headerslist.append(list(h))
+        h[0].lower().strip()
+        h[1].lower().strip()
+        if h[0] == "host":
+            host = h[1]
             if port == 80:
                 port = get_port(h[1])
+        
  
     # Replace this line with the correct values.
     ret = HttpRequestInfo(source_addr, method, host, port, path, headerslist)
@@ -274,14 +278,23 @@ def check_http_request_validity(http_request_info: HttpRequestInfo) -> HttpReque
     port = http_request_info.requested_port
     headers = http_request_info.headers
 
-    if method == "head" or method == "post" or method == "put":
-        print("not supported")
-        return HttpRequestState.NOT_SUPPORTED
-    elif method != "get":
+    if method == None or path == None:
         print("invalid input")
         return HttpRequestState.INVALID_INPUT
 
+    if method == "head" or method == "post" or method == "put":
+        print("not supported")
+        return HttpRequestState.NOT_SUPPORTED
+
     print("valid method:",method)
+
+    if port > 65536:
+        print("port is big!")
+        return HttpRequestState.INVALID_INPUT
+
+    print("valid port:", port)
+
+    
 
     
     
