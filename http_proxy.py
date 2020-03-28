@@ -198,6 +198,9 @@ def http_request_pipeline(source_addr, http_raw_data):
     print("obj req path:", parsed.requested_path)
     print("obj req port:", parsed.requested_port)
     print("obj req headers:", parsed.headers)
+
+    state = check_http_request_validity(parsed)
+    
     # Validate, sanitize, return Http object.
     return None
 
@@ -235,9 +238,9 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
         print("group1:",match.group(1))
         print("group2:",match.group(2))
         print("group3:",match.group(3))
-        method = match.group(1)
-        path = match.group(2)
-        version = match.group(3)
+        method = match.group(1).lower().strip()
+        path = match.group(2).lower().strip()
+        version = match.group(3).lower().strip()
 
 
     port = get_port(path)
@@ -249,7 +252,7 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
 
     for h in headerslist:
         if h[0].lower().strip() == "host":
-            host = h[1]
+            host = h[1].lower().strip()
             if port == 80:
                 port = get_port(h[1])
  
@@ -264,9 +267,18 @@ def check_http_request_validity(http_request_info: HttpRequestInfo) -> HttpReque
     returns:
     One of values in HttpRequestState
     """
-    print("*" * 50)
-    print("[check_http_request_validity] Implement me!")
-    print("*" * 50)
+
+    method = http_request_info.method
+
+    if method == "head" or method == "post" or method == "put":
+        print("not supported")
+        return HttpRequestState.NOT_SUPPORTED
+    elif method != "get":
+        print("invalid input")
+        return HttpRequestState.INVALID_INPUT
+
+    print("val method:",method)
+    
     # return HttpRequestState.GOOD (for example)
     return HttpRequestState.PLACEHOLDER
 
