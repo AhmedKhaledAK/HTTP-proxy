@@ -218,7 +218,7 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
 
     requestln = http_raw_data[:http_raw_data.index('\n')] 
 
-    match = re.search(r"([a-zA-Z-._~:/?#[\]@!$&'()*+,;=0-9]+)\s+([a-zA-Z-._~:/?#[\]@!$&'()*+,;=0-9]+)\s+([a-zA-Z-._~:/?#[\]@!$&'()*+,;=0-9]+)", requestln)
+    match = re.search(r"([a-zA-Z-._~:/?#[\]@!$&'()*+,;=%0-9]+)\s+([a-zA-Z-._~:/?#[\]@!$&'()*+,;=%0-9]+)\s+([a-zA-Z-._~:/?#[\]@!$&'()*+,;=%0-9]+)", requestln)
     if match != None:
         print("group0:",match.group(0))
         print("group1:",match.group(1))
@@ -228,31 +228,17 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
         path = match.group(2)
         version = match.group(3)
 
+
+    headers = http_raw_data[http_raw_data.index('\n')+1:]
+    
+    headerslist = re.findall(r"([a-zA-Z0-9]+):\s*([a-zA-Z/:.0-9]+)", headers)
+    print("headerslist", headerslist)
     
     """
-    # the request line from GET to \n inclusive
-    
-
-    try:
-        method = requestln[:requestln.index(' ')]	# to be sent
-    except:
-        method = None
-    print(f"method: {method}")
-    version = requestln[-9:]	# to be sent
-    print("version:", version)
-    pathlen = len(requestln) - len(version)-1 - 4     # 3 is for GET and 1 is for SPACE
-    path = ""	# to be sent
-    i=4	# index of the first space according to GET only, can be better found using index() method
-    while i < 4+pathlen:
-        path += requestln[i]
-        i+=1    
-    print("path:",path)
-
     headers = http_raw_data[http_raw_data.index('\n')+1:]
     print("headersec =", headers)
     headerslist = []	# to be sent
     ishost = False
-    host = None	# to be sent
     port = 80	# to be sent
     while True:
         header = headers[:headers.index('\r')]
