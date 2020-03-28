@@ -296,13 +296,9 @@ def check_http_request_validity(http_request_info: HttpRequestInfo) -> HttpReque
         return HttpRequestState.INVALID_INPUT
 
     print("valid port:", port)
-
-    
-
-    
     
     # return HttpRequestState.GOOD (for example)
-    return HttpRequestState.PLACEHOLDER
+    return HttpRequestState.GOOD
 
 
 def sanitize_http_request(request_info: HttpRequestInfo) -> HttpRequestInfo:
