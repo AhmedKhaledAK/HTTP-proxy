@@ -230,7 +230,7 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
         
     headers = http_raw_data[http_raw_data.index('\n')+1:]
     
-    headerslist = re.findall(r"([a-zA-Z0-9]+):\s*([a-zA-Z/:.0-9]+)", headers)
+    headerslist = re.findall(r"([a-zA-Z0-9]+):[^\n\r]*([a-zA-Z/:.0-9]+)", headers)
     print("headerslist", headerslist)
 
     for h in headerslist:
