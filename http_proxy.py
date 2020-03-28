@@ -211,14 +211,14 @@ def http_request_pipeline(source_addr, http_raw_data):
 
 def get_port(searchstr):
     if searchstr == None:
-        return 80, False
+        return 80, -1
     match = re.search(":\d+",searchstr)
     print("match port:",match)
     if match != None:
         print("group port:",match.group()[1:])
         port = int(match.group()[1:])
-        return port, True
-    return 80, False
+        return port, match.group().index(":")
+    return 80, -1
 
 def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
     """
@@ -246,8 +246,7 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
         path = match.group(2).lower().strip()
         version = match.group(3).lower().strip()
 
-
-    port, boolean = get_port(path)
+    port, idx = get_port(path)
         
     headers = http_raw_data[http_raw_data.index('\n')+1:]
     
@@ -261,8 +260,8 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
         if h[0] == "host":
             host = h[1]
             if port == 80:
-                port, boolean = get_port(h[1])
-                if boolean == True:
+                port, idx = get_port(h[1])
+                if idx != -1:
                     h[1] = h[1][0:h[1].index(":")]
 
     print("headerslist", headerslist)
