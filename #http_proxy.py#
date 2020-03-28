@@ -274,14 +274,23 @@ def check_http_request_validity(http_request_info: HttpRequestInfo) -> HttpReque
     port = http_request_info.requested_port
     headers = http_request_info.headers
 
-    if method == "head" or method == "post" or method == "put":
-        print("not supported")
-        return HttpRequestState.NOT_SUPPORTED
-    elif method != "get":
+    if method == None or path == None:
         print("invalid input")
         return HttpRequestState.INVALID_INPUT
 
+    if method == "head" or method == "post" or method == "put":
+        print("not supported")
+        return HttpRequestState.NOT_SUPPORTED
+
     print("valid method:",method)
+
+    if port > 65536:
+        print("port is big!")
+        return HttpRequestState.INVALID_INPUT
+
+    print("valid port:", port)
+
+    
 
     
     
