@@ -190,6 +190,8 @@ def http_request_pipeline(source_addr, http_raw_data):
     Please don't remove this function, but feel
     free to change its content
     """
+
+    httpobj = ""
     # Parse HTTP request
     parsed = parse_http_request(source_addr, http_raw_data)
     print("obj client info:", parsed.client_address_info)
@@ -199,7 +201,9 @@ def http_request_pipeline(source_addr, http_raw_data):
     print("obj req port:", parsed.requested_port)
     print("obj req headers:", parsed.headers)
 
-    state = check_http_request_validity(parsed)
+    state = check_http_request_validity(http_raw_data)
+    if state == HttpRequestState.GOOD:
+        httpobj = sanitize_http_request(parsed)
     
     # Validate, sanitize, return Http object.
     return None
@@ -207,14 +211,14 @@ def http_request_pipeline(source_addr, http_raw_data):
 
 def get_port(searchstr):
     if searchstr == None:
-        return 80
+        return 80, False
     match = re.search(":\d+",searchstr)
     print("match port:",match)
     if match != None:
         print("group port:",match.group()[1:])
         port = int(match.group()[1:])
-        return port
-    return 80
+        return port, True
+    return 80, False
 
 def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
     """
@@ -243,7 +247,7 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
         version = match.group(3).lower().strip()
 
 
-    port = get_port(path)
+    port, boolean = get_port(path)
         
     headers = http_raw_data[http_raw_data.index('\n')+1:]
     
@@ -257,9 +261,9 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
         if h[0] == "host":
             host = h[1]
             if port == 80:
-                port = get_port(h[1])
-                h[1] = h[1][0:h[1].index(":")]
-                
+                port, boolean = get_port(h[1])
+                if boolean == True:
+                    h[1] = h[1][0:h[1].index(":")]
 
     print("headerslist", headerslist)
         
@@ -268,12 +272,14 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
     return ret
 
 
-def check_http_request_validity(http_request_info: HttpRequestInfo) -> HttpRequestState:
+def check_http_request_validity(http_raw_data) -> HttpRequestState:
     """
     Checks if an HTTP response is valid
     returns:
     One of values in HttpRequestState
     """
+
+    http_request_info = parse_http_request(None, http_raw_data)
 
     method = http_request_info.method
     path = http_request_info.requested_path
@@ -309,9 +315,7 @@ def sanitize_http_request(request_info: HttpRequestInfo) -> HttpRequestInfo:
     sanitized fields
     for example, expand a URL to relative path + Host header.
     """
-    print("*" * 50)
-    print("[sanitize_http_request] Implement me!")
-    print("*" * 50)
+
     ret = HttpRequestInfo(None, None, None, None, None, None)
     return ret
 
