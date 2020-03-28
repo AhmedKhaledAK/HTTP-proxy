@@ -258,6 +258,7 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
             host = h[1]
             if port == 80:
                 port = get_port(h[1])
+                h[1] = h[1][0:h[1].index(":")]
                 
 
     print("headerslist", headerslist)
