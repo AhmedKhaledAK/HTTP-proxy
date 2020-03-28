@@ -190,8 +190,6 @@ def http_request_pipeline(source_addr, http_raw_data):
     Please don't remove this function, but feel
     free to change its content
     """
-
-    httpobj = ""
     # Parse HTTP request
     parsed = parse_http_request(source_addr, http_raw_data)
     print("obj client info:", parsed.client_address_info)
@@ -203,7 +201,7 @@ def http_request_pipeline(source_addr, http_raw_data):
 
     state = check_http_request_validity(http_raw_data)
     if state == HttpRequestState.GOOD:
-        httpobj = sanitize_http_request(parsed)
+        sanitize_http_request(parsed)
     
     # Validate, sanitize, return Http object.
     return None
@@ -231,7 +229,7 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
     host = None
     path = None
     version = None
-    port = None
+    port = 80
     headerslist = []
 
     requestln = http_raw_data[:http_raw_data.index('\n')] 
@@ -244,9 +242,13 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
         print("group3:",match.group(3))
         method = match.group(1).lower().strip()
         path = match.group(2).lower().strip()
+        port, port_idx = get_port(path)
+        if port_idx != -1:
+            port_digits = len(str(port))+1
+            path = path[:port_idx] + path[port_idx+port_digits:]
+        print("new path: ", path)
+        print("port = ", port)
         version = match.group(3).lower().strip()
-
-    port, idx = get_port(path)
         
     headers = http_raw_data[http_raw_data.index('\n')+1:]
     
@@ -306,17 +308,35 @@ def check_http_request_validity(http_raw_data) -> HttpRequestState:
     return HttpRequestState.GOOD
 
 
-def sanitize_http_request(request_info: HttpRequestInfo) -> HttpRequestInfo:
+
+def sanitize_http_request(request_info: HttpRequestInfo):
     """
-    Puts an HTTP request on the sanitized (standard form)
+    Puts an HTTP request on the sanitized (standard) form
+    by modifying the input request_info object.
+    for example, expand a full URL to relative path + Host header.
     returns:
-    A modified object of the HttpRequestInfo with
-    sanitized fields
-    for example, expand a URL to relative path + Host header.
+    nothing, but modifies the input object
     """
 
-    ret = HttpRequestInfo(None, None, None, None, None, None)
-    return ret
+    host = request_info.requested_host
+    path = request_info.requested_path
+    port = request_info.requested_port
+    method = request_info.method
+    headerslist = request_info.headers
+    clientaddr = request_info.client_address_info
+
+    # format 2 already, nothing has to be done
+    if host != None:
+        print("format 2 already")
+        return request_info
+
+    # format 2, split hostname from path
+    match = re.search(r"([(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6})\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)", path)
+
+    if match != None:
+        print("complete match is ", match.group(0))
+        print("complete match is ", match.group(1))
+        print("complete match is ", match.group(2))
 
 #######################################
 # Leave the code below as is.
