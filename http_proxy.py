@@ -58,10 +58,17 @@ class HttpRequestInfo(object):
         keeping it as a string in this stage is to ease
         debugging and testing.
         """
+        
+        httpstr = self.method + " " + self.requested_path + " http/1.0\r\n"
+        httpstr += "Host: " + self.requested_host + ":" + str(self.requested_port) + "\r\n"
+        for h in self.headers:
+            if h[0] == "host":
+                continue
+            httpstr += h[0] + ": " + h[1] + "\r\n"
 
-        print("*" * 50)
-        print("[to_http_string] Implement me!")
-        print("*" * 50)
+        httpstr += "\r\n"
+
+        print("http string:", httpstr)
         return None
 
     def to_byte_array(self, http_string):
@@ -202,7 +209,7 @@ def http_request_pipeline(source_addr, http_raw_data):
     state = check_http_request_validity(http_raw_data)
     if state == HttpRequestState.GOOD:
         sanitize_http_request(parsed)
-    
+    parsed.to_http_string()
     # Validate, sanitize, return Http object.
     return None
 
