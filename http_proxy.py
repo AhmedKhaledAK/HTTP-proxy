@@ -244,7 +244,7 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
         
     headers = http_raw_data[http_raw_data.index('\n')+1:]
     
-    headerslist = re.findall(r"([a-zA-Z0-9]+):[^\n\ra-zA-Z/:.0-9]*([a-zA-Z/:.0-9]+)", headers)
+    headerslist = re.findall(r"([a-zA-Z0-9 -]+):[^\n\ra-zA-Z/:.0-9();,+=*\" -]*([a-zA-Z/:.0-9();,+=*\" -]+)", headers)
     print("headerslist", headerslist)
 
     for h in headerslist:
@@ -252,47 +252,7 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
             host = h[1]
             if port == 80:
                 port = get_port(h[1])
-             
-    
-    """
-    headers = http_raw_data[http_raw_data.index('\n')+1:]
-    print("headersec =", headers)
-    headerslist = []	# to be sent
-    ishost = False
-    port = 80	# to be sent
-    while True:
-        header = headers[:headers.index('\r')]
-        print("header:", header)
-        if len(header) == 0:
-            break
-        headertuple = tuple(header.split(":"))
-        print("headertuple:", headertuple)
-        if headertuple[0].lower().strip() == "host":
-            ishost = True
-            host = headertuple[1]
-            if len(headertuple) >= 3:	# a port should be found
-                try:
-                    port = int(headertuple[2].strip())
-                except:
-                    port = -1
-        headerslist.append(headertuple)
-        headers = headers[headers.index('\n')+1:]
-
-    print("headerslist:", headerslist)
-
-    if ishost == False:
-        host = path
-        path = None
-        match = re.search(":\d+",host)
-        print("match:",match)
-        if match != None:
-            print("group:",match.group()[1:])
-            port = int(match.group()[1:])
-    
-    print("host:",host)
-    print("path:",path)
-    print("port:",port)
-    """
+ 
     # Replace this line with the correct values.
     ret = HttpRequestInfo(source_addr, method, host, port, path, headerslist)
     return ret
