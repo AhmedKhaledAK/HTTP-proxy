@@ -217,7 +217,7 @@ def get_port(searchstr):
     if match != None:
         print("group port:",match.group()[1:])
         port = int(match.group()[1:])
-        return port, match.group().index(":")
+        return port, searchstr.find(match.group())
     return 80, -1
 
 def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
@@ -262,7 +262,7 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
             if port == 80:
                 port, idx = get_port(h[1])
                 if idx != -1:
-                    h[1] = h[1][0:h[1].index(":")]
+                    h[1] = h[1][0:idx]
 
     print("headerslist", headerslist)
         
