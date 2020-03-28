@@ -328,15 +328,17 @@ def sanitize_http_request(request_info: HttpRequestInfo):
     # format 2 already, nothing has to be done
     if host != None:
         print("format 2 already")
-        return request_info
+        return
 
-    # format 2, split hostname from path
+    # format 2, split hostname from path variable
     match = re.search(r"([(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6})\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)", path)
 
     if match != None:
         print("complete match is ", match.group(0))
         print("complete match is ", match.group(1))
         print("complete match is ", match.group(2))
+        request_info.requested_host = match.group(1)
+        request_info.requested_path = match.group(2)
 
 #######################################
 # Leave the code below as is.
