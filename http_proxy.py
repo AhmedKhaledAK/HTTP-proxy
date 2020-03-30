@@ -58,8 +58,7 @@ class HttpRequestInfo(object):
         keeping it as a string in this stage is to ease
         debugging and testing.
         """
-        
-        httpstr = self.method + " " + self.requested_path + " http/1.0\r\n"
+        httpstr = self.method.upper() + " " + self.requested_path + " http/1.0\r\n"
         httpstr += "Host: " + self.requested_host + ":" + str(self.requested_port) + "\r\n"
         for h in self.headers:
             if h[0] == "host":
@@ -130,8 +129,27 @@ def entry_point(proxy_port_number):
     inside it.
     """
 
-    setup_sockets(proxy_port_number)
+    clientaddr, requeststr= setup_sockets(proxy_port_number)
+    http_request_info = http_request_pipeline(clientaddr, requeststr)
+
+    setup_server_socket(http_request_info)
     return None
+
+
+def setup_server_socket(http_request_info):
+
+    httpstr = http_request_info.to_http_string()
+    httpbytes = http_request_info.to_byte_array(httpstr)
+
+    serversock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    serveraddr = (http_request_info.requested_host, http_request_info.requested_port)
+
+    serversock.connect(serveraddr)
+    serversock.send(httpbytes)
+
+    
+    
+    print(httpbytes)
 
 
 def setup_sockets(proxy_port_number):
@@ -153,27 +171,26 @@ def setup_sockets(proxy_port_number):
     print(f"received from {clientaddr}")
 
     buffer = []
-    httpstr = ""
+    requeststr = ""
 
     while True:
         httppacket = clientsock.recv(4096)
         print(f"http packet: {httppacket}")
         buffer += httppacket
-        httpstr += httppacket.decode("ascii")
+        requeststr += httppacket.decode("ascii")
         print(f"bytearray: {buffer}")
-        print(f"str: {httpstr}")
+        print(f"str: {requeststr}")
         if buffer[-4:] == [13, 10, 13, 10]:
             print("done receiving")
             break
     
     print("buffer: ", buffer)
-    print("httsptr: ", httpstr)
-    http_request_pipeline(clientaddr, httpstr)
+    print("requeststr: ", requeststr)
 
     # when calling socket.listen() pass a number
     # that's larger than 10 to avoid rejecting
     # connections automatically.
-    return None
+    return clientaddr, requeststr
 
 
 def do_socket_logic():
@@ -209,11 +226,8 @@ def http_request_pipeline(source_addr, http_raw_data):
     print("obj req headers:", parsed.headers)
     if state == HttpRequestState.GOOD:
         sanitize_http_request(parsed)
-    httpstr = parsed.to_http_string()
-    httpbytes = parsed.to_byte_array(httpstr)
-    print("httpbytes:",httpbytes)
     # Validate, sanitize, return Http object.
-    return None
+    return parsed
 
 
 def get_port(searchstr):
