@@ -68,8 +68,9 @@ class HttpRequestInfo(object):
 
         httpstr += "\r\n"
 
-        print("http string:", httpstr)
-        return None
+        print("http string:")
+        print(httpstr)
+        return httpstr
 
     def to_byte_array(self, http_string):
         """
@@ -197,6 +198,7 @@ def http_request_pipeline(source_addr, http_raw_data):
     Please don't remove this function, but feel
     free to change its content
     """
+    state = check_http_request_validity(http_raw_data)
     # Parse HTTP request
     parsed = parse_http_request(source_addr, http_raw_data)
     print("obj client info:", parsed.client_address_info)
@@ -205,11 +207,11 @@ def http_request_pipeline(source_addr, http_raw_data):
     print("obj req path:", parsed.requested_path)
     print("obj req port:", parsed.requested_port)
     print("obj req headers:", parsed.headers)
-
-    state = check_http_request_validity(http_raw_data)
     if state == HttpRequestState.GOOD:
         sanitize_http_request(parsed)
-    parsed.to_http_string()
+    httpstr = parsed.to_http_string()
+    httpbytes = parsed.to_byte_array(httpstr)
+    print("httpbytes:",httpbytes)
     # Validate, sanitize, return Http object.
     return None
 
