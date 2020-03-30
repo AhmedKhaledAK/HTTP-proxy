@@ -58,7 +58,7 @@ class HttpRequestInfo(object):
         keeping it as a string in this stage is to ease
         debugging and testing.
         """
-        httpstr = self.method.upper() + " " + self.requested_path + " http/1.0\r\n"
+        httpstr = self.method.upper() + " " + self.requested_path + " HTTP/1.0\r\n"
         httpstr += "Host: " + self.requested_host + ":" + str(self.requested_port) + "\r\n"
         for h in self.headers:
             if h[0] == "host":
@@ -147,7 +147,10 @@ def setup_server_socket(http_request_info):
     serversock.connect(serveraddr)
     serversock.send(httpbytes)
 
-    
+    response = serversock.recv(4096)
+
+    print("response:")
+    print(response)
     
     print(httpbytes)
 
@@ -264,7 +267,7 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
         print("group2:",match.group(2))
         print("group3:",match.group(3))
         method = match.group(1).lower().strip()
-        path = match.group(2).lower().strip()
+        path = match.group(2).strip()
         port, port_idx = get_port(path)
         if port_idx != -1:
             port_digits = len(str(port))+1
