@@ -347,7 +347,11 @@ def sanitize_http_request(request_info: HttpRequestInfo):
         print("complete match is ", match.group(1))
         print("complete match is ", match.group(2))
         request_info.requested_host = match.group(1)
-        request_info.requested_path = match.group(2)
+        if match.group(2).strip() == "":
+            path = "/"
+        else:
+            path = match.group(2)
+        request_info.requested_path = path
 
 #######################################
 # Leave the code below as is.
