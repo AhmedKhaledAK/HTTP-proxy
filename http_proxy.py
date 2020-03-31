@@ -147,7 +147,52 @@ def setup_server_socket(http_request_info):
     serversock.connect(serveraddr)
     serversock.send(httpbytes)
 
-    response = serversock.recv(4096)
+    response = []
+    found = False
+    value = ""
+    done = False
+    body = False
+    bytearr = bytes("Content-Length: ".encode("ascii"))
+    
+    response = serversock.recv(15)
+    i=0
+
+    while True:
+        data = serversock.recv(1)
+        response += data
+        #print(response)
+        if found == False:
+            if response[-16:] == bytearr:
+                print("response:",response[-16:])
+                print("content length found, start taking in value")
+                found = True
+            continue
+            
+        if done == False:
+            #print(data)
+            print("value:",value)
+            print("vallen:",str(len(value)))
+            if response[-1:] != "\r".encode():
+                value += data.decode()
+            else:
+                value = int(value)
+                print("value is ", value)
+                done = True
+            continue
+        
+        if body == False:
+            # if last 4 bytes are \r\n\r\n, we are starting body
+            if response[-4:] == bytes("\r\n\r\n".encode("ascii")):
+                body = True
+            continue
+        
+        #start reading n bytes then stop
+        value -= 1
+        
+        if value == 0:
+            print("finished reading response")
+            break
+         
 
     print("response:")
     print(response)
