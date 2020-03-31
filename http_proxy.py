@@ -130,19 +130,9 @@ def entry_point(proxy_port_number):
     but feel free to modify the code
     inside it.
     """
+    # conn, clientaddr, request_str = setup_sockets(proxy_port_number)
+    setup_sockets(proxy_port_number)
 
-    clientaddr, requeststr, clientsock = setup_sockets(proxy_port_number)
-    http_request_info = http_request_pipeline(clientaddr, requeststr)
-
-    response = setup_server_socket(http_request_info)
-
-    cache[http_request_info.requested_host+http_request_info.requested_path] = response
-
-    print("cache entries: ", cache)
-
-    
-    respond_to_client(response, clientaddr, clientsock)
-    
     return None
 
 def respond_to_client(data, clientaddr, sock):
@@ -187,36 +177,47 @@ def setup_sockets(proxy_port_number):
     """
     print("Starting HTTP proxy on port:", proxy_port_number)
 
-    serversock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    
-    serveraddr = ("127.0.0.1", proxy_port_number)
-
-    serversock.bind(serveraddr)
-    serversock.listen(12)
-    clientsock, clientaddr = serversock.accept()
-    print(f"received from {clientaddr}")
-
-    buffer = []
-    requeststr = ""
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.bind(("localhost", proxy_port_number))
 
     while True:
-        httppacket = clientsock.recv(4096)
-        print(f"http packet: {httppacket}")
-        buffer += httppacket
-        requeststr += httppacket.decode("ascii")
-        print(f"bytearray: {buffer}")
-        print(f"str: {requeststr}")
-        if buffer[-4:] == [13, 10, 13, 10]:
-            print("done receiving")
-            break
-    
-    print("buffer: ", buffer)
-    print("requeststr: ", requeststr)
+        server_socket.listen(20)
+        conn, client_address = server_socket.accept()
+        print(f"Connection from {client_address} has been established")
+        buffer = []
+        request_str = ''
 
-    # when calling socket.listen() pass a number
-    # that's larger than 10 to avoid rejecting
-    # connections automatically.
-    return clientaddr, requeststr, clientsock
+        while True:
+            data = conn.recv(1024)
+            buffer += data
+            request_str += data.decode("ascii")
+            print(data.decode("ascii"))
+            if(buffer[-4:] == [13, 10, 13, 10]):
+                break
+
+        some_func(conn, client_address, request_str)
+        conn.close()
+        
+    # return conn, client_address, request_str
+
+def some_func(conn, clientaddr, request_str, ):
+    http_request_info = http_request_pipeline(clientaddr, request_str)
+    print("*************************")
+    http_response = None
+    # check if request exists in cache
+    if http_request_info.requested_host+http_request_info.requested_path in cache:
+        print("your request already exists in cache")
+        print("request response is ", cache[http_request_info.requested_host+http_request_info.requested_path])
+        http_response = cache[http_request_info.requested_host+http_request_info.requested_path]
+    else:
+        print("new request!")
+        http_response = setup_server_socket(http_request_info)
+
+    cache[http_request_info.requested_host+http_request_info.requested_path] = http_response
+
+    # print("cache entries: ", cache)
+
+    respond_to_client(http_response, clientaddr, conn)
 
 
 def do_socket_logic():
