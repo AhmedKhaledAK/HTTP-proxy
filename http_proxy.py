@@ -129,11 +129,18 @@ def entry_point(proxy_port_number):
     inside it.
     """
 
-    clientaddr, requeststr, servsock = setup_sockets(proxy_port_number)
+    clientaddr, requeststr, clientsock = setup_sockets(proxy_port_number)
     http_request_info = http_request_pipeline(clientaddr, requeststr)
 
     response = setup_server_socket(http_request_info)
+
+    respond_to_client(response, clientaddr, clientsock)
+    
     return None
+
+def respond_to_client(data, clientaddr, sock):
+    sock.send(bytes(data))
+    
 
 
 def setup_server_socket(http_request_info):
@@ -152,13 +159,9 @@ def setup_server_socket(http_request_info):
 
     while True:
         data = serversock.recv(1)
-        if data.decode("ascii") == "":
+        if data == "".encode():
             break
-        else:
-            responsestr += data.decode("ascii")
         response += data
-
-    print(responsestr)
 
     print("response:")
     print(response)
@@ -207,7 +210,7 @@ def setup_sockets(proxy_port_number):
     # when calling socket.listen() pass a number
     # that's larger than 10 to avoid rejecting
     # connections automatically.
-    return clientaddr, requeststr, serversock
+    return clientaddr, requeststr, clientsock
 
 
 def do_socket_logic():
