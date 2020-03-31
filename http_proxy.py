@@ -7,6 +7,8 @@ import socket
 import re
 
 
+cache =  {}
+
 class HttpRequestInfo(object):
     """
     Represents a HTTP request information
@@ -134,6 +136,11 @@ def entry_point(proxy_port_number):
 
     response = setup_server_socket(http_request_info)
 
+    cache[http_request_info.requested_host+http_request_info.requested_path] = response
+
+    print("cache entries: ", cache)
+
+    
     respond_to_client(response, clientaddr, clientsock)
     
     return None
@@ -167,7 +174,6 @@ def setup_server_socket(http_request_info):
     print(response)
     
     print(httpbytes)
-
 
     return response
 
