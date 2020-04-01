@@ -180,8 +180,9 @@ def setup_sockets(proxy_port_number):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind(("localhost", proxy_port_number))
 
+    server_socket.listen(20)
+    
     while True:
-        server_socket.listen(20)
         conn, client_address = server_socket.accept()
         print(f"Connection from {client_address} has been established")
         buffer = []
