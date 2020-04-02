@@ -179,63 +179,64 @@ def setup_sockets(proxy_port_number):
     print("Starting HTTP proxy on port:", proxy_port_number)
 
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.bind(("localhost", 18888))
     server_socket.setblocking(0)
-    server_socket.bind(("localhost", proxy_port_number))
     server_socket.listen(20)
 
+
+    # select will listen to this input (server)
     inputs = [server_socket]
     outputs = []
-    requests = {}
+    request_queues = {}
+    
 
-    while True:
-        readable, writable, excepts = select.select(inputs, outputs, inputs)
+    while inputs:
+        # check to see which sockets are readable, writable, exceptional
+        readable, writable, exceptional = select.select(inputs, outputs, inputs)
+        
         for s in readable:
+            # server socket is ready to be read from
+            # accept new client (new connection)
             if s is server_socket:
-                conn, clientaddr = s.accept()
-                conn.setblocking(0)
-                inputs.append(conn)
-                requests[conn] = queue.Queue()
+                connection, client_address = s.accept()
+                print("testing1")
+                print(connection)
+                print(connection.getpeername())
+                print("accepting connection from address: ", client_address)
+                connection.setblocking(0)
+                #append connection to inputs (sockets we might want to read from)
+                inputs.append(connection)
+                request_queues[connection] = queue.Queue()
             else:
+                #we are receiving data from a client
                 data = []
+                print("receiving data")
                 data += s.recv(1024)
-                print("data:",data)
-                if data: 
-                    requests[s].put(data)
+                print("data is: ", data)
+                # print(data)
+                #if they sent actual data (not an empty string), add it to corresponding socket's msg queue
+                if data:
+                    request_queues[s].put(data)
+
                     if data == [13, 10]:
-                        print("client finished sending:")
-                        outputs.append(s)
+                        print("end of data")
                         inputs.remove(s)
-                        print("data received:",data)
+                        outputs.append(s)
+                    elif len(data) >=4 and data[-4:] == [13, 10, 13, 10]:
+                        print("end of data")
+                        inputs.remove(s)
+                        outputs.append(s)
+                   
 
         for s in writable:
-            requeststr = tostr(requests[s])
-            print("requeststr:",requeststr)
+            #socket s's request is ready to be serviced
+            request_str = tostr(request_queues[s])
+            print(request_str.encode("ascii"))
+            print("testing2")
+            print(s.getpeername())
             outputs.remove(s)
-            print("clientaddr:",s.getpeername())
-            some_func(s, s.getpeername(), requeststr)
+            some_func(s, s.getpeername(), request_str)
             s.close()
-            
-                        
-
-    """
-    while True:
-        conn, client_address = server_socket.accept()
-        print(f"Connection from {client_address} has been established")
-        buffer = []
-        request_str = ''
-
-        while True:
-            data = conn.recv(1024)
-            buffer += data
-            request_str += data.decode("ascii")
-            print(data.decode("ascii"))
-            if(buffer[-4:] == [13, 10, 13, 10]):
-                break
-
-        some_func(conn, client_address, request_str)
-        conn.close()
-    """
-    # return conn, client_address, request_str
 
 
 def tostr(queue):
