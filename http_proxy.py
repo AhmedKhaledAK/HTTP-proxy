@@ -93,14 +93,12 @@ class HttpErrorResponse(object):
     """
     Represents a proxy-error-response.
     """
-
     def __init__(self, code, message):
         self.code = code
         self.message = message
 
     def to_http_string(self):
-        """ Same as above """
-        pass
+        return "HTTP/1.0 " + str(self.code) + " " + self.message + "\r\n\r\n"
 
     def to_byte_array(self, http_string):
         """
@@ -210,9 +208,9 @@ def setup_sockets(proxy_port_number):
             else:
                 #we are receiving data from a client
                 data = []
-                print("receiving data")
+                ##print("receiving data")
                 data += s.recv(1024)
-                print("data is: ", data)
+                ##print("data is: ", data)
                 # print(data)
                 #if they sent actual data (not an empty string), add it to corresponding socket's msg queue
                 if data:
@@ -232,8 +230,8 @@ def setup_sockets(proxy_port_number):
             #socket s's request is ready to be serviced
             request_str = tostr(request_queues[s])
             print(request_str.encode("ascii"))
-            print("testing2")
-            print(s.getpeername())
+           ## print("testing2")
+            print("client addr:",s.getpeername())
             outputs.remove(s)
             some_func(s, s.getpeername(), request_str)
             s.close()
@@ -248,22 +246,27 @@ def tostr(queue):
 
 def some_func(conn, clientaddr, request_str, ):
     http_request_info = http_request_pipeline(clientaddr, request_str)
-    print("*************************")
-    http_response = None
-    # check if request exists in cache
-    if http_request_info.requested_host+http_request_info.requested_path in cache:
-        print("your request already exists in cache")
-        print("request response is ", cache[http_request_info.requested_host+http_request_info.requested_path])
-        http_response = cache[http_request_info.requested_host+http_request_info.requested_path]
+    
+    if isinstance(http_request_info, HttpErrorResponse):
+        http_str = http_request_info.to_http_string()
+        http_bytes = http_request_info.to_byte_array(http_str)
+ 
+        respond_to_client(http_bytes, clientaddr, conn)
     else:
-        print("new request!")
-        http_response = setup_server_socket(http_request_info)
+        print("*************************")
+        http_response = None
+        # check if request exists in cache
+        if http_request_info.requested_host+http_request_info.requested_path in cache:
+            print("your request already exists in cache")
+            print("request response is ", cache[http_request_info.requested_host+http_request_info.requested_path])
+            http_response = cache[http_request_info.requested_host+http_request_info.requested_path]
+        else:
+            print("new request!")
+            http_response = setup_server_socket(http_request_info)
 
-    cache[http_request_info.requested_host+http_request_info.requested_path] = http_response
-
-    # print("cache entries: ", cache)
-
-    respond_to_client(http_response, clientaddr, conn)
+        cache[http_request_info.requested_host+http_request_info.requested_path] = http_response
+        # print("cache entries: ", cache)
+        respond_to_client(http_response, clientaddr, conn)
 
 
 def do_socket_logic():
@@ -288,7 +291,16 @@ def http_request_pipeline(source_addr, http_raw_data):
     Please don't remove this function, but feel
     free to change its content
     """
-    state = check_http_request_validity(http_raw_data)
+    validity = check_http_request_validity(http_raw_data)
+    if validity is not HttpRequestState.GOOD:
+        print("not good")
+        if validity is HttpRequestState.INVALID_INPUT:
+            http_error_response = HttpErrorResponse(400, "Bad Request")
+        elif validity is HttpRequestState.NOT_SUPPORTED:
+            http_error_response = HttpErrorResponse(501, "Not Implemented")
+
+        return http_error_response
+
     # Parse HTTP request
     parsed = parse_http_request(source_addr, http_raw_data)
     print("obj client info:", parsed.client_address_info)
@@ -297,8 +309,7 @@ def http_request_pipeline(source_addr, http_raw_data):
     print("obj req path:", parsed.requested_path)
     print("obj req port:", parsed.requested_port)
     print("obj req headers:", parsed.headers)
-    if state == HttpRequestState.GOOD:
-        sanitize_http_request(parsed)
+    sanitize_http_request(parsed)
     # Validate, sanitize, return Http object.
     return parsed
 
