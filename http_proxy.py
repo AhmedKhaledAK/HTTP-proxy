@@ -5,7 +5,8 @@ import os
 import enum
 import socket
 import re
-
+import queue
+import select
 
 cache =  {}
 
@@ -178,10 +179,45 @@ def setup_sockets(proxy_port_number):
     print("Starting HTTP proxy on port:", proxy_port_number)
 
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.setblocking(0)
     server_socket.bind(("localhost", proxy_port_number))
-
     server_socket.listen(20)
-    
+
+    inputs = [server_socket]
+    outputs = []
+    requests = {}
+
+    while True:
+        readable, writable, excepts = select.select(inputs, outputs, inputs)
+        for s in readable:
+            if s is server_socket:
+                conn, clientaddr = s.accept()
+                conn.setblocking(0)
+                inputs.append(conn)
+                requests[conn] = queue.Queue()
+            else:
+                data = []
+                data += s.recv(1024)
+                print("data:",data)
+                if data: 
+                    requests[s].put(data)
+                    if data == [13, 10]:
+                        print("client finished sending:")
+                        outputs.append(s)
+                        inputs.remove(s)
+                        print("data received:",data)
+
+        for s in writable:
+            requeststr = tostr(requests[s])
+            print("requeststr:",requeststr)
+            outputs.remove(s)
+            print("clientaddr:",s.getpeername())
+            some_func(s, s.getpeername(), requeststr)
+            s.close()
+            
+                        
+
+    """
     while True:
         conn, client_address = server_socket.accept()
         print(f"Connection from {client_address} has been established")
@@ -198,8 +234,16 @@ def setup_sockets(proxy_port_number):
 
         some_func(conn, client_address, request_str)
         conn.close()
-        
+    """
     # return conn, client_address, request_str
+
+
+def tostr(queue):
+    requeststr = ""
+    while queue.empty() == False:
+        requeststr += bytes(queue.get()).decode("ascii")
+    return requeststr
+    
 
 def some_func(conn, clientaddr, request_str, ):
     http_request_info = http_request_pipeline(clientaddr, request_str)
