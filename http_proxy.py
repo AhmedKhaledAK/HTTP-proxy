@@ -453,11 +453,28 @@ def sanitize_http_request(request_info: HttpRequestInfo):
     headerslist = request_info.headers
     clientaddr = request_info.client_address_info
 
-    # format 2 already, nothing has to be done
-    if host != None:
-        print("format 2 already")
-        return
+    http_request = ""
+    if host is not None:
+        if host.find("http://") != -1:
+            request_info.requested_host = request_info.requested_host[7:]
+        elif host.find("https://") != -1:
+            request_info.requested_host = request_info.requested_host[8:]
+        return request_info
 
+
+    if path.find("http://") != -1:
+        path = path[7:]
+    elif path.find("https://") != -1:
+        path = path[8:]
+
+    if path.find("/") != -1:
+        host = path[: path.index("/")]
+        path = path[path.index("/") :]
+
+    request_info.requested_path = path
+    request_info.requested_host = host
+
+    """
     # format 2, split hostname from path variable
     match = re.search(r"([(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6})\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)", path)
 
@@ -475,6 +492,7 @@ def sanitize_http_request(request_info: HttpRequestInfo):
         else:
             path = match.group(2)
         request_info.requested_path = path
+    """
 
 #######################################
 # Leave the code below as is.

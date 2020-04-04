@@ -23,11 +23,13 @@ def newclient( clientName, requeststr):
 
 # Create two threads as follows
 try:
-   _thread.start_new_thread( newclient, ("Client-1", "GET /hypertext/WWW/TheProject.html HTTP/1.0\r\nHost: info.cern.ch\r\n\r\n") )
-   _thread.start_new_thread( newclient, ("Client-2", "GET eng.alexu.edu.eg/ HTTP/1.0\r\n\r\n") )
-   _thread.start_new_thread( newclient, ("Client-3", "GET eng.alexu.edu.eg/ HTTP/1.0\r\n\r\n") )
-   _thread.start_new_thread( newclient, ("Client-4", "GET /hypertext/WWW/TheProject.html HTTP/1.0\r\nHost: info.cern.ch\r\n\r\n") )
-   _thread.start_new_thread( newclient, ("Client-5", "GET /hypertext/WWW/TheProject.html HTTP/1.0\r\nHost: info.cern.ch\r\n\r\n") )
+  _thread.start_new_thread( newclient, ("Client-1", "GET /hypertext/WWW/TheProject.html HTTP/1.0\r\nHost: info.cern.ch\r\n\r\n") )
+  _thread.start_new_thread( newclient, ("Client-2", "GET eng.alexu.edu.eg/ HTTP/1.0\r\n\r\n") )
+  _thread.start_new_thread( newclient, ("Client-3", "GET www.apache.org/ HTTP/1.0\r\n\r\n") )
+  _thread.start_new_thread( newclient, ("Client-4", "GET www.apache.org/ HTTP/1.0\r\n\r\n") )
+  _thread.start_new_thread( newclient, ("Client-5", "GET eng.alexu.edu.eg/ HTTP/1.0\r\n\r\n") )
+  _thread.start_new_thread( newclient, ("Client-6", "GET info.cern.ch/hypertext/WWW/TheProject.html HTTP/1.0\r\n\r\n") )
+  _thread.start_new_thread( newclient, ("Client-7", "GET /hypertext/WWW/TheProject.html HTTP/1.0\r\nHost: info.cern.ch\r\n\r\n") )
 
 except:
    print("Error: unable to start thread")
