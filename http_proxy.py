@@ -62,9 +62,12 @@ class HttpRequestInfo(object):
         debugging and testing.
         """
         httpstr = self.method.upper() + " " + self.requested_path + " HTTP/1.0\r\n"
-        httpstr += "Host: " + self.requested_host + ":" + str(self.requested_port) + "\r\n"
+        httpstr += "Host: " + self.requested_host
+        if self.requested_port != 80:
+            httpstr += ":" + str(self.requested_port)
+        httpstr += "\r\n"
         for h in self.headers:
-            if h[0] == "host":
+            if h[0].lower() == "host":
                 continue
             httpstr += h[0] + ": " + h[1] + "\r\n"
 
@@ -347,7 +350,7 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
         print("group1:",match.group(1))
         print("group2:",match.group(2))
         print("group3:",match.group(3))
-        method = match.group(1).lower().strip()
+        method = match.group(1).strip()
         path = match.group(2).strip()
         port, port_idx = get_port(path)
         if port_idx != -1:
@@ -364,9 +367,9 @@ def parse_http_request(source_addr, http_raw_data) -> HttpRequestInfo:
     for h in tupleslist:
         h = list(h)
         headerslist.append(h)
-        h[0] = h[0].lower().strip()
-        h[1] = h[1].lower().strip()
-        if h[0] == "host":
+        h[0] = h[0].strip()
+        h[1] = h[1].strip()
+        if h[0].lower() == "host":
             host = h[1]
             if port == 80:
                 port, idx = get_port(h[1])
@@ -399,9 +402,23 @@ def check_http_request_validity(http_raw_data) -> HttpRequestState:
         print("invalid input")
         return HttpRequestState.INVALID_INPUT
 
+    http_raw_data = http_raw_data[:-4]
+    num_of_headers = len(http_raw_data.split("\r\n")) - 1
+
+    if num_of_headers != len(http_request_info.headers):
+        return HttpRequestState.INVALID_INPUT
+
+    if path[0] == "/" and host == None:
+        return HttpRequestState.INVALID_INPUT
+
+    method = method.lower()
+
     if method == "head" or method == "post" or method == "put":
         print("not supported")
         return HttpRequestState.NOT_SUPPORTED
+    elif method != "get":
+        print("invalid")
+        return HttpRequestState.INVALID_INPUT
 
     print("valid method:",method)
 
