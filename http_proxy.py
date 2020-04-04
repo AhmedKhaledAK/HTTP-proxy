@@ -169,7 +169,6 @@ def setup_server_socket(http_request_info):
 
     return response
 
-
 def setup_sockets(proxy_port_number):
     """
     Socket logic MUST NOT be written in the any
@@ -180,7 +179,7 @@ def setup_sockets(proxy_port_number):
     print("Starting HTTP proxy on port:", proxy_port_number)
 
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.bind(("localhost", 18888))
+    server_socket.bind(("localhost", proxy_port_number))
     server_socket.setblocking(0)
     server_socket.listen(20)
 
@@ -200,54 +199,59 @@ def setup_sockets(proxy_port_number):
             # accept new client (new connection)
             if s is server_socket:
                 connection, client_address = s.accept()
-                print("testing1")
-                print(connection)
-                print(connection.getpeername())
                 print("accepting connection from address: ", client_address)
                 connection.setblocking(0)
                 #append connection to inputs (sockets we might want to read from)
                 inputs.append(connection)
-                request_queues[connection] = queue.Queue()
+                request_queues[connection] = []
             else:
                 #we are receiving data from a client
                 data = []
-                ##print("receiving data")
-                data += s.recv(1024)
-                ##print("data is: ", data)
+                print("receiving data")
+                data += s.recv(5)
+                print("data is: ", data)
                 # print(data)
                 #if they sent actual data (not an empty string), add it to corresponding socket's msg queue
                 if data:
-                    request_queues[s].put(data)
+                    q = request_queues[s]
+                    print("len is ", len(q))
+                    if len(q) > 0:
+                        bytearr = q[len(q) - 1]
+                        print("bytearr: ", bytearr)
+                        ending = bytearr + data
+                        print("testing:   ", ending)
+                        if ending[-4:] == [13, 10, 13, 10]:
+                            print("end of data")
+                            inputs.remove(s)
+                            if s not in outputs:
+                                outputs.append(s)
+                    
+                    request_queues[s].append(data)
 
-                    if data == [13, 10]:
-                        print("end of data")
-                        inputs.remove(s)
-                        outputs.append(s)
-                    elif len(data) >=4 and data[-4:] == [13, 10, 13, 10]:
-                        print("end of data")
-                        inputs.remove(s)
-                        outputs.append(s)
-                   
 
         for s in writable:
             #socket s's request is ready to be serviced
             request_str = tostr(request_queues[s])
             print(request_str.encode("ascii"))
-           ## print("testing2")
-            print("client addr:",s.getpeername())
-            outputs.remove(s)
+            # print("**********************")
+            # print("sending data to: ", s.getpeername())
             some_func(s, s.getpeername(), request_str)
             s.close()
+            outputs.remove(s)
+
 
 
 def tostr(queue):
-    requeststr = ""
-    while queue.empty() == False:
-        requeststr += bytes(queue.get()).decode("ascii")
-    return requeststr
+    request_str = ""
+    while len(queue) > 0:
+        bytearr = queue[0]
+        queue = queue[1:]
+        request_str += bytes(bytearr).decode("ascii")
+    
+    return request_str
     
 
-def some_func(conn, clientaddr, request_str, ):
+def some_func(conn, clientaddr, request_str):
     http_request_info = http_request_pipeline(clientaddr, request_str)
     
     if isinstance(http_request_info, HttpErrorResponse):
@@ -462,6 +466,10 @@ def sanitize_http_request(request_info: HttpRequestInfo):
         print("complete match is ", match.group(1))
         print("complete match is ", match.group(2))
         request_info.requested_host = match.group(1)
+        if request_info.requested_host[:7] == "http://":
+            request_info.requested_host = request_info.requested_host[7:]
+        elif request_info.requested_host[:8] == "https://":
+            request_info.requested_host = request_info.requested_host[8:]
         if match.group(2).strip() == "":
             path = "/"
         else:
