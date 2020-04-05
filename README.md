@@ -43,7 +43,7 @@ then hit enter twice. Once you do that you will find that the proxy sent back th
 To test multiple clients, you can use the script *test_parallel.py*. While the server is up and running, on a terminal, type the following:
 
 ```
-python3 test_cases.py 
+python3 test_parallel.py 
 ```
 
 It will run multiple clients and the server will respond to them. Not necessarily to be sequential responses at all. 
